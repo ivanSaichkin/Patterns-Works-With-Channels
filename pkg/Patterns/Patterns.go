@@ -49,3 +49,29 @@ func SplitChannel[T any](inputCh <-chan T, n int) []<-chan T {
 
 	return resultChs
 }
+
+func Tee[T any](inputCh <-chan T, n int) []<-chan T {
+	outputChs := make([]chan T, n)
+	for i := range n {
+		outputChs[i] = make(chan T)
+	}
+
+	go func() {
+		for value := range inputCh {
+			for i := range n {
+				outputChs[i] <- value
+			}
+		}
+
+		for _, ch := range outputChs {
+			close(ch)
+		}
+	}()
+
+	resultChs := make([]<-chan T, n)
+	for i := range n {
+		resultChs[i] = outputChs[i]
+	}
+
+	return resultChs
+}
