@@ -129,3 +129,21 @@ func Process[T any](inputCh <-chan T, action func(T) T) <-chan T {
 
 	return outputCh
 }
+
+func DoneChannel(closeCh <-chan struct{}) <-chan struct{} {
+	closeDoneCh := make(chan struct{})
+
+	go func() {
+		defer close(closeDoneCh)
+		for {
+			select {
+			case <-closeCh:
+				return
+			default:
+				//processing...
+			}
+		}
+	}()
+
+	return closeDoneCh
+}
