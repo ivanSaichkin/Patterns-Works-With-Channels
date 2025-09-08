@@ -88,3 +88,18 @@ func Transformer[T any](inputCh <-chan T, action func(T) T) <-chan T {
 
 	return outputCh
 }
+
+func Filter[T any](inputCh <-chan T, predicate func(T) bool) <-chan T {
+	outputCh := make(chan T)
+
+	go func() {
+		defer close(outputCh)
+		for value := range inputCh {
+			if predicate(value) {
+				outputCh <- value
+			}
+		}
+	}()
+
+	return outputCh
+}
