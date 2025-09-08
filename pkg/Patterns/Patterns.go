@@ -75,3 +75,16 @@ func Tee[T any](inputCh <-chan T, n int) []<-chan T {
 
 	return resultChs
 }
+
+func Transformer[T any](inputCh <-chan T, action func(T) T) <-chan T {
+	outputCh := make(chan T)
+
+	go func() {
+		defer close(outputCh)
+		for value := range inputCh {
+			outputCh <- action(value)
+		}
+	}()
+
+	return outputCh
+}
