@@ -103,3 +103,29 @@ func Filter[T any](inputCh <-chan T, predicate func(T) bool) <-chan T {
 
 	return outputCh
 }
+
+func Generate[T any](values ...T) <-chan T {
+	outputCh := make(chan T)
+
+	go func() {
+		defer close(outputCh)
+		for _, value := range values {
+			outputCh <- value
+		}
+	}()
+
+	return outputCh
+}
+
+func Process[T any](inputCh <-chan T, action func(T) T) <-chan T {
+	outputCh := make(chan T)
+
+	go func() {
+		defer close(outputCh)
+		for value := range inputCh {
+			outputCh <- action(value)
+		}
+	}()
+
+	return outputCh
+}
